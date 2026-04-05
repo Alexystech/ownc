@@ -1,0 +1,56 @@
+package com.famvari.infrastructure.rest;
+
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import com.famvari.domain.service.AuthService;
+import io.smallrye.mutiny.Uni;
+
+@Path("/auth")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+public class AuthResource {
+
+    @Inject
+    AuthService authService;
+
+    @POST
+    @Path("/request")
+    public Uni<Response> requestOtp(OtpRequest request) {
+        return authService.requestOtp(request.email)
+            .onItem().transform(success -> {
+                if (success) {
+                    return Response.ok("OTP enviado").build();
+                }
+                return Response.status(Response.Status.NOT_FOUND).entity("Usuario no registrado").build();
+            });
+    }
+
+    @POST
+    @Path("/verify")
+    public Uni<Response> verifyOtp(VerifyRequest request) {
+        return authService.verifyOtp(request.email, request.code)
+            .onItem().ifNotNull().transform(token -> Response.ok(token).build())
+            .onItem().ifNull().continueWith(() -> Response.status(Response.Status.UNAUTHORIZED).build());
+    }
+
+    @POST
+    @Path("/logout")
+    @RolesAllowed("User") // Solo usuarios logueados pueden desloguearse
+    public Uni<Response> logout() {
+        // Aquí podrías invalidar la sesión en Redis si usaras State, 
+        // pero por ahora devolvemos 204 No Content.
+        return Uni.createFrom().item(Response.noContent().build());
+    }
+
+    // DTOs para la petición y respuesta
+    public static class VerifyRequest { public String email; public String code; }
+    public static class OtpRequest { public String email; }
+    public static class TokenResponse { public String token; public TokenResponse(String t){this.token=t;} }
+
+    public static class LoginRequest {
+        public String email;
+    }
+}

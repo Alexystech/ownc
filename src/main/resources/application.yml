@@ -1,0 +1,70 @@
+quarkus:
+  http:
+    port: 8080
+  profile: dev
+  mailer:
+    from: "OWNC <ownc.mailer@gmail.com>"
+    host: "smtp.gmail.com"
+    port: 587
+    username: "ownc.mailer@gmail.com"
+    password: "${MAILER_PASSWORD}"
+    start-tls: REQUIRED
+    mock: false
+  datasource:
+    db-kind: postgresql
+    username: quarkus_user
+    password: quarkus_password
+    reactive:
+      url: postgresql://localhost:5433/ownc_db
+    devservices:
+      enabled: true
+      port: 5433
+      db-name: ownc_db
+      username: quarkus_user
+      password: quarkus_password
+  hibernate-orm:
+    database:
+      generation: drop-and-create
+    sql-load-script: import.sql
+    log:
+      sql: true
+  log:
+    level:
+      io.hibernate.reactive.errors: DEBUG
+  smallrye-jwt:
+    enabled: true
+smallrye:
+  jwt:
+    sign:
+      key:
+        location: privateKey.pem
+google:
+  cloud:
+    project-id: "subtle-reserve-456823-n1"
+    credentials:
+      file-path: "/home/alexis/canva/ownc/keys/subtle-reserve-456823-n1-729247d0e46c.json"
+mi:
+  bucket:
+    name: "canaris"
+mp:
+  jwt:
+    verify:
+      publickey:
+        location: publicKey.pem
+      issuer: "https://ownc.famvari.com"
+---
+"%dev":
+  quarkus:
+    http:
+      port: 8080
+---
+"%prod":
+  quarkus:
+    http:
+      port: 8080
+      host: 0.0.0.0
+    container-image:
+      group: "us-central1-docker.pkg.dev/subtle-reserve-456823-n1/uploader-repo"
+      name: "uploader-backend"
+      tag: "latest"
+      builder: "jib"

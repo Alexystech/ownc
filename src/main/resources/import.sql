@@ -1,0 +1,2 @@
+INSERT INTO users (id, email, name, role) VALUES (nextval('users_SEQ'), 'vamavz.io@gmail.com', 'Alexis', 'User');
+INSERT INTO users (id, email, name, role) VALUES (nextval('users_SEQ'), 'esme.rivas2799@gmail.com', 'Esme', 'User');
