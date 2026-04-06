@@ -2,7 +2,7 @@
 package com.famvari.infrastructure.gcp;
 
 import com.famvari.domain.service.StorageService;
-import com.famvari.infrastructure.rest.dto.FileDetails;
+import com.famvari.rest.dto.FileDetails;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.*;
 import io.smallrye.mutiny.Uni;
@@ -15,7 +15,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
 @ApplicationScoped
@@ -65,8 +65,28 @@ public class GcsStorageService implements StorageService {
         return Uni.createFrom().item(() -> {
             var blobs = storage.list(bucketName).iterateAll();
             return StreamSupport.stream(blobs.spliterator(), false)
-                    .map(blob -> new FileDetails(blob.getName()))
-                    .collect(Collectors.toList());
+                    .map(blob -> new FileDetails(blob.getName(), blob.getContentType(), blob.getMediaLink()))
+                    .toList();
+        });
+    }
+
+    @Override
+    public Uni<List<FileDetails>> listUserFiles(String email) {
+        return Uni.createFrom().item(() -> {
+            var blobs = storage.list(bucketName, Storage.BlobListOption.prefix(email + "/")).iterateAll();
+            
+            return StreamSupport.stream(blobs.spliterator(), false)
+                .map(blob -> {
+                    // Generamos una URL firmada que expire en 15 minutos
+                    String signedUrl = storage.signUrl(
+                            blob, 
+                            15, 
+                            TimeUnit.MINUTES, 
+                            Storage.SignUrlOption.withV4Signature()
+                    ).toString();
+
+                    return new FileDetails(blob.getName(), blob.getContentType(), signedUrl);
+                }).toList();
         });
     }
 }

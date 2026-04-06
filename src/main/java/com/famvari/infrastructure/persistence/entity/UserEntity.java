@@ -1,12 +1,16 @@
 package com.famvari.infrastructure.persistence.entity;
 
-import io.quarkus.hibernate.reactive.panache.PanacheEntityBase; // Asegúrate que sea Base
+import java.util.HashSet;
+import java.util.Set;
+
+import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue; // Faltaba este
-import jakarta.persistence.GenerationType; // Faltaba este
-import jakarta.persistence.Id;             // Faltaba este
-import jakarta.persistence.SequenceGenerator; // Faltaba este
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import io.smallrye.mutiny.Uni;
 
@@ -25,7 +29,11 @@ public class UserEntity extends PanacheEntityBase {
     @Column(nullable = false)
     public String name;
 
+    @Column(nullable = false)
     public String role; // "User", "Admin", etc.
+
+    @OneToMany(mappedBy = "user")
+    public Set<FileShareEntity> shares = new HashSet<>();
 
     // Método de utilidad para buscar por email de forma reactiva
     public static Uni<UserEntity> findByEmail(String email) {

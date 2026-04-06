@@ -52,7 +52,6 @@ public class AuthServiceImpl implements AuthService {
                     .chain(() -> reactiveMailer.send(
                         Mail.withText(email, "Acceso OWNC", "Tu código es: " + otpCode)
                     ))
-                    // 3. Si todo sale bien, retornamos true
                     .replaceWith(true);
             });
     }

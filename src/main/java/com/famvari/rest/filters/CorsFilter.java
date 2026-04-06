@@ -1,4 +1,4 @@
-package com.famvari.infrastructure.rest.filters;
+package com.famvari.rest.filters;
 
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;

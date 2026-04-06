@@ -1,4 +1,4 @@
-package com.famvari.infrastructure.rest.dto;
+package com.famvari.rest.dto;
 
 import java.util.List;
 

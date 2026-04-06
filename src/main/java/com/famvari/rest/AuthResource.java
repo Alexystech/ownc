@@ -1,4 +1,4 @@
-package com.famvari.infrastructure.rest;
+package com.famvari.rest;
 
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;

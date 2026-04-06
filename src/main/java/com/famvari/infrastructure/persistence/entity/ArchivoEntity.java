@@ -3,6 +3,8 @@ package com.famvari.infrastructure.persistence.entity;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
 
 import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import jakarta.persistence.Column;
@@ -10,7 +12,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
@@ -29,15 +31,22 @@ public class ArchivoEntity extends PanacheEntityBase {
     @Column(nullable = false)
     public String extension;
     
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
-    public Boolean activo;
+    @Column(nullable = false)
+    public Boolean activo = true;
     
-    @Column(name = "fecha_registro", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", updatable = false, insertable = false)
+    @Column(
+        name = "fecha_registro", 
+        nullable = false, 
+        insertable = false, 
+        updatable = false, 
+        columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+    )
+    @Generated(event = {EventType.INSERT})
     public LocalDateTime fechaRegistro;
     
     @Column(name = "fecha_eliminacion")
     public LocalDateTime fechaEliminacion;
 
-    @ManyToMany(mappedBy = "archivos")
-    public Set<UserEntity> usuarios = new HashSet<>();
+    @OneToMany(mappedBy = "archivo")
+    public Set<FileShareEntity> compartidosCon = new HashSet<>();
 }
