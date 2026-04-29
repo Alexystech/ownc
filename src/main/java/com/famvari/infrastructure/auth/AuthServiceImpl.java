@@ -76,6 +76,6 @@ public class AuthServiceImpl implements AuthService {
                 .groups(new HashSet<>(Arrays.asList("User", "StorageAdmin"))) 
                 .claim("email", email) 
                 .expiresIn(Duration.ofHours(8)) 
-                .sign(); 
+                .sign();
     }
 }

@@ -1,6 +1,7 @@
 quarkus:
   http:
     port: 8080
+    host: 0.0.0.0
   profile: dev
   mailer:
     from: "OWNC <ownc.mailer@gmail.com>"
