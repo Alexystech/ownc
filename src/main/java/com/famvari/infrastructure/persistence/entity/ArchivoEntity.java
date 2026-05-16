@@ -3,8 +3,6 @@ package com.famvari.infrastructure.persistence.entity;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import org.hibernate.annotations.Generated;
-import org.hibernate.generator.EventType;
 
 import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import jakarta.persistence.Column;
@@ -19,7 +17,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "archivos")
 public class ArchivoEntity extends PanacheEntityBase {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "archivosSeq")
     @SequenceGenerator(name = "archivosSeq", sequenceName = "archivos_SEQ", allocationSize = 1)
@@ -27,23 +25,17 @@ public class ArchivoEntity extends PanacheEntityBase {
 
     @Column(nullable = false)
     public String rutaArchivo;
-    
+
     @Column(nullable = false)
     public String extension;
-    
+
     @Column(nullable = false)
     public Boolean activo = true;
-    
-    @Column(
-        name = "fecha_registro", 
-        nullable = false, 
-        insertable = false, 
-        updatable = false, 
-        columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-    )
-    @Generated(event = {EventType.INSERT})
+
+    @org.hibernate.annotations.CreationTimestamp
+    @Column(name = "fecha_registro", nullable = false, updatable = false)
     public LocalDateTime fechaRegistro;
-    
+
     @Column(name = "fecha_eliminacion")
     public LocalDateTime fechaEliminacion;
 

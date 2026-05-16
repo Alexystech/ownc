@@ -2,9 +2,6 @@ package com.famvari.infrastructure.persistence.entity;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.annotations.Generated;
-import org.hibernate.generator.EventType;
-
 import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,7 +21,7 @@ public class FileShareEntity extends PanacheEntityBase {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "fileSharesSeq")
     @SequenceGenerator(name = "fileSharesSeq", sequenceName = "file_shares_SEQ", allocationSize = 1)
     public Long id;
-    
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     public UserEntity user;
@@ -32,15 +29,9 @@ public class FileShareEntity extends PanacheEntityBase {
     @ManyToOne
     @JoinColumn(name = "archivo_id", nullable = false)
     public ArchivoEntity archivo;
-    
-    @Column(
-        name = "fecha_alta", 
-        nullable = false, 
-        insertable = false, 
-        updatable = false, 
-        columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-    )
-    @Generated(event = {EventType.INSERT})
+
+    @org.hibernate.annotations.CreationTimestamp
+    @Column(name = "fecha_alta", nullable = false, updatable = false)
     public LocalDateTime fechaAlta;
 
     @Column(name = "permiso_rol", nullable = false)

@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ownc_db
+      POSTGRES_USER: quarkus_user
+      POSTGRES_PASSWORD: quarkus_password
+    ports:
+      - "5433:5432"  # Mapea el puerto host 5433 al contenedor 5432 (puerto estándar de Postgres)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quarkus_user -d ownc_db && psql -U quarkus_user -d ownc_db -c 'SELECT 1'"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+  app:
+    image: maven:3.9.6-eclipse-temurin-21
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - QUARKUS_DATASOURCE_REACTIVE_URL=postgresql://db:5432/ownc_db
+      - QUARKUS_DATASOURCE_USERNAME=quarkus_user
+      - QUARKUS_DATASOURCE_PASSWORD=quarkus_password
+      - QUARKUS_DATASOURCE_DEV_SERVICES_ENABLED=false
+      - QUARKUS_REDIS_HOSTS=redis://redis:6379
+      - MAILER_PASSWORD=${MAILER_PASSWORD}
+      - PRIVATE_KEY=${PRIVATE_KEY}
+      - PUBLIC_KEY=${PUBLIC_KEY}
+      - PROD_DOMAIN=${PROD_DOMAIN}
+      - DEV_DOMAIN=${DEV_DOMAIN}
+    volumes:
+      - .:/app
+      - ~/.m2:/root/.m2  # Para cache de Maven
+    working_dir: /app
+    command: bash -c "sleep 2 && ./mvnw quarkus:dev -Dquarkus.http.host=0.0.0.0"
+volumes:
+  postgres_data:
+  redis_data:

@@ -1,8 +1,16 @@
 quarkus:
   http:
-    port: 8080
+    port: ${PORT:8080}
     host: 0.0.0.0
-  profile: dev
+  profile: [{dev}]
+  devservices:
+    enabled: false
+  hibernate-orm:
+    database:
+      generation: none # Default to none for safety
+    sql-load-script: import.sql
+    log:
+      sql: true
   mailer:
     from: "OWNC <ownc.mailer@gmail.com>"
     host: "smtp.gmail.com"
@@ -13,54 +21,28 @@ quarkus:
     mock: false
   datasource:
     db-kind: postgresql
-    username: quarkus_user
-    password: quarkus_password
+    username: ${DB_USERNAME:quarkus_user}
+    password: ${DB_PASSWORD:quarkus_password}
     reactive:
-      url: postgresql://localhost:5433/ownc_db
+      url: ${DB_URL:postgresql://localhost:5433/ownc_db}
     devservices:
-      enabled: true
-      port: 5433
-      db-name: ownc_db
-      username: quarkus_user
-      password: quarkus_password
-  hibernate-orm:
-    database:
-      generation: drop-and-create
-    sql-load-script: import.sql
-    log:
-      sql: true
+      enabled: false
+  redis:
+    hosts: ${REDIS_URL:redis://localhost:6379}
+    devservices:
+      enabled: false
   log:
-    level:
-      io.hibernate.reactive.errors: DEBUG
-  smallrye-jwt:
-    enabled: true
-smallrye:
-  jwt:
-    sign:
-      key:
-        location: privateKey.pem
-google:
-  cloud:
-    project-id: "subtle-reserve-456823-n1"
-    credentials:
-      file-path: "/home/alexis/canva/ownc/keys/subtle-reserve-456823-n1-729247d0e46c.json"
-mi:
-  bucket:
-    name: "canaris"
-mp:
-  jwt:
-    verify:
-      publickey:
-        location: publicKey.pem
-      issuer: "https://ownc.famvari.com"
----
-"%dev":
-  quarkus:
-    http:
-      port: 8080
----
+    level: INFO
+    console:
+      format: "%d{HH:mm:ss} %-5p [%c{2.}] (%t) %s%e%n"
+
 "%prod":
   quarkus:
+    hibernate-orm:
+      database:
+        generation: none # Never drop-and-create in prod
+    dev-ui:
+      enabled: false
     http:
       port: 8080
       host: 0.0.0.0
@@ -69,3 +51,49 @@ mp:
       name: "uploader-backend"
       tag: "latest"
       builder: "jib"
+    datasource:
+      port: 5433
+      db-name: ownc_db
+      username: quarkus_user
+      password: quarkus_password
+    log:
+      level: INFO
+      # Desactivamos logs a archivo en prod para evitar problemas de permisos
+      file:
+        enable: false
+  mp:
+    jwt:
+      verify:
+        issuer: ${PROD_DOMAIN}
+        publickey:
+          value: ${PUBLIC_KEY}
+
+"%dev":
+  quarkus:
+    hibernate-orm:
+      database:
+        generation: drop-and-create
+    http:
+      port: 8080
+  mp:
+    jwt:
+      verify:
+        issuer: ${DEV_DOMAIN}
+        publickey:
+          value: ${PUBLIC_KEY}
+
+smallrye:
+  jwt:
+    sign:
+      key:
+        value: ${PRIVATE_KEY}
+google:
+  cloud:
+    project-id: "subtle-reserve-456823-n1"
+    # En Cloud Run usaremos la identidad de la instancia, no un archivo de key si es posible
+    # Pero si lo necesitan, deben asegurarse de que el archivo existe
+    credentials:
+      file-path: ${GOOGLE_APPLICATION_CREDENTIALS:keys/subtle-reserve-456823-n1-729247d0e46c.json}
+mi:
+  bucket:
+    name: "canaris"

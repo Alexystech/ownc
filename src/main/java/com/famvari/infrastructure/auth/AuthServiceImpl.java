@@ -12,6 +12,7 @@ import io.quarkus.redis.datasource.value.ReactiveValueCommands;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import io.smallrye.jwt.build.Jwt;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.time.Duration;
@@ -25,6 +26,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Inject
     ReactiveMailer reactiveMailer;
+
+    @ConfigProperty(name = "mp.jwt.verify.issuer")
+    String issuer;
 
     // Usamos la versión reactiva de los comandos de Redis
     private final ReactiveValueCommands<String, String> otpCommands;
@@ -71,11 +75,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private String generateJwt(String email) {
-        return Jwt.issuer("https://ownc.famvari.com") 
+        return Jwt.issuer(issuer) 
                 .upn(email) 
                 .groups(new HashSet<>(Arrays.asList("User", "StorageAdmin"))) 
                 .claim("email", email) 
-                .expiresIn(Duration.ofHours(8)) 
+                .expiresIn(Duration.ofHours(1)) 
                 .sign();
     }
 }

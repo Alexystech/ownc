@@ -1,0 +1,30 @@
+# Stage 1: Compilación nativa
+FROM quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21 AS build
+# Cambiamos temporalmente a root para preparar los permisos
+USER root
+RUN mkdir /code && chown quarkus:quarkus /code
+# Volvemos al usuario quarkus para el resto del proceso
+USER quarkus
+WORKDIR /code
+COPY --chown=quarkus:quarkus mvnw /code/mvnw
+COPY --chown=quarkus:quarkus .mvn /code/.mvn
+COPY --chown=quarkus:quarkus pom.xml /code/
+# Descargar dependencias para cachear esta capa
+RUN ./mvnw -B dependency:go-offline
+COPY --chown=quarkus:quarkus src /code/src
+# Compilar el binario nativo
+RUN ./mvnw package -Pnative -Dquarkus.native.container-build=false
+
+# Stage 2: Imagen de ejecución "micro" (ultra ligera)
+FROM quay.io/quarkus/quarkus-micro-image:2.0
+WORKDIR /work/
+COPY --from=build /code/target/*-runner /work/application
+# Copiamos las llaves si son necesarias para la autenticación de Google Cloud
+COPY keys /work/keys
+RUN chmod 775 /work /work/application /work/keys
+EXPOSE 8080
+USER 1001
+
+# Cloud Run escucha en el puerto definido por la variable de entorno PORT
+# Quarkus ahora leerá esta variable gracias al cambio en application.yml
+CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]

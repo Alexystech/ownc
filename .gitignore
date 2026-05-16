@@ -28,6 +28,12 @@ nb-configuration.xml
 # OSX
 .DS_Store
 
+# Keys and secrets
+*.pem
+privateKey.pem
+publicKey.pem
+.env
+
 # Vim
 *.swp
 *.swo

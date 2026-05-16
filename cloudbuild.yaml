@@ -1,0 +1,12 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [
+    'build', 
+    '-f', 'src/main/docker/Dockerfile.cloudrun-native', 
+    '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/ownc-repo/ownc-native:latest', 
+    '.'
+  ]
+options:
+  machineType: 'E2_HIGHCPU_32' # Máquina con mucha RAM para el build nativo
+images:
+- 'us-central1-docker.pkg.dev/$PROJECT_ID/ownc-repo/ownc-native:latest'

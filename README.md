@@ -65,3 +65,12 @@ If you want to learn more about building native executables, please consult <htt
 Easily start your REST Web Services
 
 [Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+
+## Errores
+
+### Problemas de permisos en logs
+Si no se permite la escritura o modificación de archivos en la carpeta `logs/` debido a permisos (común cuando Docker los crea como root), ejecuta el siguiente comando en tu terminal:
+
+```bash
+sudo chown -R $USER:$USER logs
+```

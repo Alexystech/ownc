@@ -18,6 +18,7 @@ import com.famvari.rest.dto.FileDetails;
 import java.util.List;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import com.famvari.infrastructure.ratelimit.RedisRateLimit;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 
@@ -38,6 +39,7 @@ public class UploadResource {
     @Path("/upload")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
+    @RedisRateLimit(limit = 5, windowSeconds = 60)
     public Uni<ApiResponse<FileDetails>> uploadFile(@RestForm("file") FileUpload file) {
         String email = jwt.getClaim("email");
         return fileAppService.uploadAndRegister(file.fileName(), file.contentType(), file.filePath().toFile(), email)
@@ -52,10 +54,13 @@ public class UploadResource {
     @POST
     @Path("/list")
     @Produces(MediaType.APPLICATION_JSON)
+    @RedisRateLimit(limit = 20, windowSeconds = 60)
     public Uni<ApiResponse<FileDetails>> listFilesByEmail() {
         String email = jwt.getClaim("email");
         return storageService.listUserFiles(email)
             .onItem().transform(files -> new ApiResponse<>(true, "Archivos listados exitosamente", files))
-            .onFailure().recoverWithItem(e -> new ApiResponse<>(false, "Error al listar los archivos: " + e.getMessage(), null));
+            .onFailure().recoverWithItem(e -> 
+                new ApiResponse<>(false, "Error al listar los archivos: " + e.getMessage(), null)
+            );
     }
 }
